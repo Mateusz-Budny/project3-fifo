@@ -145,10 +145,35 @@ int zwrocDlugoscKolejki(List* Lista) {
 void usunElementListyZPrzodu(List* Lista) {
 	if (Lista->ListaPierwszy) {
 		if (Lista->ListaPierwszy == Lista->ListaOstatni) {
+
+			if (Lista->KolejkaPierwszy) {
+				if (Lista->ListaPierwszy == Lista->KolejkaPierwszy) {
+					Lista->KolejkaOstatni = NULL;
+					Lista->KolejkaPierwszy = NULL;
+				}
+			}
 			Lista->ListaOstatni = NULL;
 			Lista->ListaPierwszy = NULL;
 		}
 		else {
+			if (Lista->KolejkaPierwszy) {
+				if (Lista->ListaPierwszy == Lista->KolejkaPierwszy) {
+					if (Lista->KolejkaPierwszy == Lista->KolejkaOstatni) {
+						Lista->KolejkaPierwszy = NULL;
+						Lista->KolejkaOstatni = NULL;
+					}
+					else
+						Lista->KolejkaPierwszy = Lista->KolejkaPierwszy->prev;
+				}
+				else if (Lista->ListaPierwszy == Lista->KolejkaOstatni) {
+					if (Lista->KolejkaPierwszy == Lista->KolejkaOstatni) {
+						Lista->KolejkaPierwszy = NULL;
+						Lista->KolejkaOstatni = NULL;
+					}
+					else
+						Lista->KolejkaOstatni = Lista->KolejkaOstatni->next;
+				}
+			}
 			Lista->ListaOstatni->next = Lista->ListaPierwszy->next;
 			Lista->ListaPierwszy->prev = Lista->ListaOstatni;
 			Lista->ListaPierwszy = Lista->ListaOstatni->next;
@@ -164,8 +189,14 @@ void dodajDoKolejki(List* Lista, int wartosc) {
 	}
 	//lista niepusta
 	else {
+		//brak elementow kolejki
+		if (Lista->KolejkaPierwszy == 0) {
+			Lista->ListaOstatni->value = wartosc;
+			Lista->KolejkaPierwszy = Lista->ListaOstatni;
+			Lista->KolejkaOstatni = Lista->ListaOstatni;
+		}
 		//dlugosc listy jest wieksza niz kolejki
-		if (zwrocDlugoscKolejki(Lista) < zwrocDlugoscListy(Lista)) {
+		else if (zwrocDlugoscKolejki(Lista) < zwrocDlugoscListy(Lista)) {
 			Lista->KolejkaOstatni->prev->value = wartosc;
 			Lista->KolejkaOstatni = Lista->KolejkaOstatni->prev;
 		}
@@ -214,13 +245,98 @@ void zdejmijZKolejki(List* Lista) {
 void usunElementListyZTylu(List* Lista) {
 	if (Lista->ListaPierwszy) {
 		if (Lista->ListaPierwszy == Lista->ListaOstatni) {
+			if (Lista->KolejkaPierwszy) {
+				if (Lista->ListaPierwszy == Lista->KolejkaPierwszy) {
+					Lista->KolejkaOstatni = NULL;
+					Lista->KolejkaPierwszy = NULL;
+				}
+			}
 			Lista->ListaOstatni = NULL;
 			Lista->ListaPierwszy = NULL;
 		}
 		else {
+			//istnieje kolejka
+			if (Lista->KolejkaPierwszy) {
+
+				if (Lista->ListaOstatni == Lista->KolejkaPierwszy) {
+					//jeden element kolejki
+					if (Lista->KolejkaPierwszy == Lista->KolejkaOstatni) {
+						Lista->KolejkaPierwszy = NULL;
+						Lista->KolejkaOstatni = NULL;
+					}
+					//wiecej elementow kolejki
+					else {
+						Lista->KolejkaPierwszy = Lista->KolejkaPierwszy->prev;
+					}
+				}
+				else if (Lista->ListaOstatni == Lista->KolejkaOstatni) {
+					//jeden element kolejki
+					if (Lista->KolejkaPierwszy == Lista->KolejkaOstatni) {
+						Lista->KolejkaPierwszy = NULL;
+						Lista->KolejkaOstatni = NULL;
+					}
+					//wiecej elementow kolejki
+					else {
+						Lista->KolejkaOstatni = Lista->KolejkaOstatni->next;
+					}
+				}
+			}
 			Lista->ListaPierwszy->prev = Lista->ListaOstatni->prev;
 			Lista->ListaOstatni->prev->next = Lista->ListaPierwszy;
 			Lista->ListaOstatni = Lista->ListaOstatni->prev;
+		}
+	}
+}
+void wpisz0dlaNieKolejki(List* Lista) {
+	if (Lista->ListaPierwszy != 0) {
+		if (Lista->KolejkaPierwszy != 0) {
+			if (zwrocDlugoscKolejki(Lista) < zwrocDlugoscListy(Lista)) {
+				elem* aktualny;
+				aktualny = Lista->KolejkaOstatni;
+				if (aktualny->prev) {
+					aktualny = aktualny->prev;
+					aktualny->value = 0;
+					while (aktualny != Lista->KolejkaPierwszy) {
+						aktualny->value = 0;
+						aktualny = aktualny->prev;
+					}
+					//aktualny->value = 0;
+				}
+			}
+		}
+		//wszystkie zeruj
+		else {
+			elem* aktualny;
+			aktualny = Lista->ListaPierwszy;
+			while (aktualny != Lista->ListaOstatni) {
+				aktualny->value = 0;
+				aktualny = aktualny->next;
+			}
+			aktualny->value = 0;
+		}
+	}
+}
+void usunNieKolejke(List* Lista) {
+	if (Lista->ListaPierwszy != 0) {
+		if (Lista->KolejkaPierwszy != 0) {
+			elem* aktualny;
+			aktualny = Lista->KolejkaOstatni;
+			aktualny = aktualny->next;
+			while (aktualny != Lista->KolejkaPierwszy) {
+				aktualny->next->prev = aktualny->prev;
+				aktualny->prev->next = aktualny->next;
+				aktualny = aktualny->next;
+			}
+		}
+		//wszystkie zeruj
+		else {
+			elem* aktualny;
+			aktualny = Lista->ListaPierwszy->next;
+			while (aktualny != Lista->ListaOstatni) {
+				free(aktualny->prev);
+				aktualny = aktualny->next;
+			}
+			free(aktualny);
 		}
 	}
 }
@@ -273,10 +389,10 @@ int main() {
 			cout << zwrocDlugoscKolejki(&Lista) << endl;
 		}
 		else if (!strcmp(komenda, "GARBAGE_SOFT")) {
-
+			wpisz0dlaNieKolejki(&Lista);
 		}
 		else if (!strcmp(komenda, "GARBAGE_HARD")) {
-
+			usunNieKolejke(&Lista);
 		}
 	}
 }
