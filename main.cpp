@@ -111,10 +111,9 @@ void drukujKolejke(List* Lista) {
 		cout << "NULL" << endl;
 }
 int zwrocDlugoscListy(List* Lista) {
-	int ilosc = 0;
 	elem* Elem;
 	if (Lista->ListaPierwszy != 0) {
-		ilosc++;
+		int ilosc = 1;
 		Elem = Lista->ListaPierwszy;
 		while (Elem != Lista->ListaOstatni) {
 			ilosc++;
@@ -127,10 +126,10 @@ int zwrocDlugoscListy(List* Lista) {
 		return 0;
 }
 int zwrocDlugoscKolejki(List* Lista) {
-	int ilosc = 0;
+
 	elem* Elem;
 	if (Lista->KolejkaPierwszy != 0) {
-		ilosc++;
+		int ilosc = 1;
 		Elem = Lista->KolejkaPierwszy;
 		while (Elem != Lista->KolejkaOstatni) {
 			ilosc++;
@@ -176,7 +175,9 @@ void usunElementListyZPrzodu(List* Lista) {
 			}
 			Lista->ListaOstatni->next = Lista->ListaPierwszy->next;
 			Lista->ListaPierwszy->prev = Lista->ListaOstatni;
+			elem* usuwany = Lista->ListaPierwszy;
 			Lista->ListaPierwszy = Lista->ListaOstatni->next;
+			free(usuwany);
 		}
 	}
 }
@@ -283,7 +284,9 @@ void usunElementListyZTylu(List* Lista) {
 			}
 			Lista->ListaPierwszy->prev = Lista->ListaOstatni->prev;
 			Lista->ListaOstatni->prev->next = Lista->ListaPierwszy;
+			elem* usuwany = Lista->ListaOstatni;
 			Lista->ListaOstatni = Lista->ListaOstatni->prev;
+			free(usuwany);
 		}
 	}
 }
@@ -321,22 +324,30 @@ void usunNieKolejke(List* Lista) {
 		if (Lista->KolejkaPierwszy != 0) {
 			elem* aktualny;
 			aktualny = Lista->KolejkaOstatni;
-			aktualny = aktualny->next;
-			while (aktualny != Lista->KolejkaPierwszy) {
-				aktualny->next->prev = aktualny->prev;
-				aktualny->prev->next = aktualny->next;
-				aktualny = aktualny->next;
+			if (aktualny->prev) {
+				aktualny = aktualny->prev;
+				while (aktualny != Lista->KolejkaPierwszy) {
+					aktualny->next->prev = aktualny->prev;
+					aktualny->prev->next = aktualny->next;
+					aktualny = aktualny->prev;
+				}
 			}
 		}
 		//wszystkie zeruj
 		else {
-			elem* aktualny;
-			aktualny = Lista->ListaPierwszy->next;
-			while (aktualny != Lista->ListaOstatni) {
-				free(aktualny->prev);
-				aktualny = aktualny->next;
+			while (Lista->ListaPierwszy) {
+				usunElementListyZPrzodu(Lista);
 			}
-			free(aktualny);
+			/*
+			elem* aktualny;
+			if (Lista->ListaPierwszy->next) {
+				aktualny = Lista->ListaPierwszy->next;
+				while (aktualny != Lista->ListaOstatni) {
+					free(aktualny->prev);
+					aktualny = aktualny->next;
+				}
+				free(aktualny);
+			}*/
 		}
 	}
 }
